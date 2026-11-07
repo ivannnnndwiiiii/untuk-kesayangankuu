@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#d6d2e4">
+<title>Isi Ulang Yupi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- animatable background colors ---------- */
+  @property --c0{syntax:'<color>';inherits:true;initial-value:#d6d2e4}
+  @property --c1{syntax:'<color>';inherits:true;initial-value:#c2bad8}
+  @property --c2{syntax:'<color>';inherits:true;initial-value:#d8c6d6}
+  @property --c3{syntax:'<color>';inherits:true;initial-value:#c6cde2}
+
+  :root{
+    --ink:#43384f;
+    --ink-soft:#6a5e7a;
+    --card:rgba(255,255,255,.62);
+    --line:rgba(255,255,255,.9);
+    --primary:#6a5a86;
+    --primary-dark:#574873;
+    --low:#e57f86;
+    --mid:#eeb25f;
+    --high:#74c9a0;
+    box-sizing:border-box;
+  }
+  *{box-sizing:inherit;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(60% 50% at 15% 8%, var(--c1), transparent 70%),
+      radial-gradient(60% 50% at 95% 42%, var(--c2), transparent 70%),
+      radial-gradient(75% 60% at 30% 102%, var(--c3), transparent 70%),
+      var(--c0);
+    transition:--c0 1.8s ease,--c1 1.8s ease,--c2 1.8s ease,--c3 1.8s ease;
+    min-height:100dvh;
+  }
+  body[data-stage="0"]{--c0:#d6d2e4;--c1:#c2bad8;--c2:#d8c6d6;--c3:#c6cde2}
+  body[data-stage="1"]{--c0:#e0d8ea;--c1:#cfc4e2;--c2:#e8cddb;--c3:#d0d6ea}
+  body[data-stage="2"]{--c0:#e8dfea;--c1:#dccbe6;--c2:#f1d1d8;--c3:#d6e0ec}
+  body[data-stage="3"]{--c0:#efe3e6;--c1:#e5d2e6;--c2:#f6d6d0;--c3:#d4e6ea}
+  body[data-stage="4"]{--c0:#f5e7e2;--c1:#ecd6e6;--c2:#fbdcc9;--c3:#d3ebe2}
+  body[data-stage="5"]{--c0:#f9eadf;--c1:#f1d9e6;--c2:#fddfc4;--c3:#d2eedd}
+  body[data-stage="6"]{--c0:#fbecdf;--c1:#f4dae6;--c2:#ffe1c0;--c3:#d0eedc}
+  body[data-stage="7"]{--c0:#fdeee0;--c1:#f6dbe6;--c2:#ffe3bf;--c3:#cfefd9}
+  body[data-stage="8"]{--c0:#fff1e2;--c1:#fbdde8;--c2:#ffe8b8;--c3:#c9f1d6}
+
+  /* soft drifting glows */
+  .glow{position:fixed;border-radius:50%;filter:blur(46px);opacity:.5;pointer-events:none;z-index:0;
+        background:rgba(255,255,255,.75);animation:drift 14s ease-in-out infinite}
+  .glow.g1{width:220px;height:220px;top:12%;left:-70px}
+  .glow.g2{width:180px;height:180px;bottom:10%;right:-60px;animation-delay:-6s}
+  @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,-34px)}}
+
+  /* ---------- battery bar ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:10;
+    display:flex;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 0;
+    pointer-events:none;
+  }
+  .batt{display:flex;align-items:center;gap:10px;
+        background:var(--card);border:1px solid var(--line);
+        padding:7px 14px 7px 12px;border-radius:999px;
+        backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+        box-shadow:0 6px 18px rgba(67,56,79,.08)}
+  .batt-body{position:relative;width:38px;height:18px;border:2px solid var(--ink);border-radius:6px;padding:2px}
+  .batt-body::after{content:"";position:absolute;right:-5px;top:4px;width:3px;height:6px;background:var(--ink);border-radius:0 2px 2px 0}
+  .batt-fill{height:100%;width:7%;border-radius:3px;background:var(--low);transition:width 1.1s cubic-bezier(.2,.7,.2,1),background .6s ease}
+  .batt[data-level="mid"] .batt-fill{background:var(--mid)}
+  .batt[data-level="high"] .batt-fill{background:var(--high)}
+  .batt-pct{font-weight:700;font-size:14px;min-width:38px;font-variant-numeric:tabular-nums}
+  .batt-bolt{width:14px;height:14px;fill:var(--ink);stroke:none;opacity:0;transform:scale(.4);transition:opacity .3s,transform .3s}
+  .batt.charging .batt-bolt{opacity:1;transform:scale(1);animation:boltPulse .8s ease-in-out infinite}
+  @keyframes boltPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+  body[data-stage="0"] .batt-fill{animation:lowBlink 1.6s ease-in-out infinite}
+  @keyframes lowBlink{0%,100%{opacity:1}50%{opacity:.45}}
+
+  /* ---------- slides ---------- */
+  .stage{position:relative;z-index:1;width:100%;max-width:440px;height:100dvh;margin:0 auto}
+  .slide{
+    position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+    display:flex;
+    padding:calc(env(safe-area-inset-top,0px) + 78px) 22px calc(env(safe-area-inset-bottom,0px) + 30px);
+    opacity:0;visibility:hidden;transform:translateY(28px);filter:blur(6px);
+    transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1),filter .7s ease;
+  }
+  .slide.active{opacity:1;visibility:visible;transform:none;filter:none}
+  .slide.leaving{visibility:visible;opacity:0;transform:translateY(-24px);filter:blur(6px)}
+  .inner{margin:auto;width:100%;display:flex;flex-direction:column;gap:18px;text-align:center}
+
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.2;
+        font-size:clamp(26px,7.4vw,32px);letter-spacing:-.01em;outline:none}
+  p{font-size:16.5px;line-height:1.65}
+  .eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink-soft)}
+  .soft{color:var(--ink-soft)}
+  .lead{font-family:'Fraunces',Georgia,serif;font-size:clamp(19px,5.4vw,22px);line-height:1.45;font-weight:500}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 18px;
+        backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+        box-shadow:0 10px 28px rgba(67,56,79,.08);text-align:left}
+
+  .btn{
+    font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;color:#fff;
+    background:var(--primary);border:none;border-radius:999px;padding:15px 32px;cursor:pointer;
+    box-shadow:0 10px 22px rgba(106,90,134,.32);
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;align-self:center;
+    transition:transform .15s ease,background .2s ease,opacity .2s ease;text-decoration:none;
+  }
+  .btn:hover{background:var(--primary-dark)}
+  .btn:active{transform:scale(.96)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .btn svg{width:18px;height:18px}
+  .btn-ghost{background:transparent;color:var(--ink-soft);box-shadow:none;padding:10px 18px;font-size:14.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+  .btn-ghost:hover{background:transparent;color:var(--ink)}
+  .btn[hidden]{display:none}
+  :focus-visible{outline:3px solid rgba(106,90,134,.55);outline-offset:3px}
+
+  svg.ic{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  /* staggered reveal */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s ease}
+  .slide.active .reveal{opacity:1;transform:none;transition-delay:calc(var(--i,0) * .3s + .35s)}
+  .slide.leaving .reveal{opacity:1;transform:none;transition:none}
+
+  /* ---------- slide 1 ---------- */
+  .notif{display:flex;gap:14px;align-items:center;text-align:left;cursor:pointer}
+  .notif-icon{flex:none;width:46px;height:46px;border-radius:14px;background:rgba(229,127,134,.2);
+              display:grid;place-items:center;color:#c9565f}
+  .notif-icon svg{width:24px;height:24px}
+  .notif b{display:block;font-size:16.5px;margin-bottom:2px}
+  .notif span{font-size:14.5px;color:var(--ink-soft)}
+  #s1 .notif{animation:notifIn .9s cubic-bezier(.2,.9,.3,1.2) .5s both}
+  @keyframes notifIn{from{opacity:0;transform:translateY(-26px) scale(.96)}to{opacity:1;transform:none}}
+  .big-batt{width:92px;height:46px;margin:0 auto;border:4px solid var(--ink);border-radius:13px;padding:5px;position:relative;opacity:.85}
+  .big-batt::after{content:"";position:absolute;right:-11px;top:12px;width:7px;height:14px;background:var(--ink);border-radius:0 4px 4px 0}
+  .big-batt i{display:block;height:100%;width:12%;background:var(--low);border-radius:6px;animation:lowBlink 1.6s ease-in-out infinite}
+
+  /* ---------- slide 2 ---------- */
+  .procs{display:flex;flex-direction:column;gap:14px}
+  .proc-top{display:flex;justify-content:space-between;font-weight:700;font-size:15px;margin-bottom:6px}
+  .proc-top small{font-weight:600;color:var(--ink-soft);font-size:12.5px;margin-left:6px}
+  .bar{height:10px;background:rgba(67,56,79,.1);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:99px;
+         background:linear-gradient(90deg,var(--mid),var(--low));
+         transition:width 1.4s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0) * .3s + .7s)}
+  .slide.active .bar i{width:var(--w)}
+  .slide.leaving .bar i{width:var(--w);transition:none}
+
+  /* ---------- slide 3 ---------- */
+  .moments{display:flex;flex-direction:column;gap:10px}
+  .moment{display:flex;gap:12px;align-items:center;padding:14px 16px}
+  .moment .tick{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(116,201,160,.3);color:#3d9a72;display:grid;place-items:center}
+  .moment .tick svg{width:16px;height:16px;stroke-width:2.6}
+  .moment p{font-size:16px;line-height:1.4;font-weight:600}
+
+  /* ---------- slide event ---------- */
+  .journey{padding:20px 18px}
+  .journey-labels{display:flex;justify-content:space-between;gap:12px;font-weight:700;font-size:15px;margin-bottom:16px}
+  .journey-labels small{display:block;font-weight:600;color:var(--ink-soft);font-size:12.5px;margin-bottom:2px}
+  .journey-labels span:last-child{text-align:right}
+  .track{position:relative;height:12px;background:rgba(67,56,79,.1);border-radius:99px;margin:0 11px}
+  .track i{position:absolute;left:0;top:0;height:100%;width:0;border-radius:99px;
+           background:linear-gradient(90deg,#c7b6e6,#f3a9bd);
+           transition:width 2.2s cubic-bezier(.2,.7,.2,1) 1.1s}
+  .track b{position:absolute;top:50%;left:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;
+           background:#fff;border:3px solid var(--primary);box-shadow:0 4px 12px rgba(106,90,134,.35);
+           transition:left 2.2s cubic-bezier(.2,.7,.2,1) 1.1s}
+  .slide.active .track i{width:74%}
+  .slide.active .track b{left:74%}
+  .slide.leaving .track i{width:74%;transition:none}
+  .slide.leaving .track b{left:74%;transition:none}
+  .journey-note{margin-top:16px;font-size:14.5px;color:var(--ink-soft);text-align:center}
+
+  /* ---------- slide 4 ---------- */
+  .breath-wrap{position:relative;width:230px;height:230px;margin:6px auto;display:grid;place-items:center}
+  .breath-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(67,56,79,.25)}
+  .breath-orb{position:absolute;width:210px;height:210px;border-radius:50%;
+              background:radial-gradient(circle at 35% 30%,#fff 0%,#e8dcf5 40%,#cdb9e8 100%);
+              box-shadow:0 0 50px rgba(185,150,225,.55);
+              transform:scale(.62);transition:transform 4s ease-in-out}
+  .breath-label{position:relative;z-index:1;font-family:'Fraunces',serif;font-size:19px;font-weight:600;max-width:140px;line-height:1.25}
+  .breath-count{font-size:14px;color:var(--ink-soft);font-weight:600;min-height:22px}
+  .btn-row{display:flex;flex-direction:column;gap:2px;align-items:center}
+
+  /* ---------- slide 5 ---------- */
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .opt{
+    font-family:'Nunito',sans-serif;color:var(--ink);cursor:pointer;
+    background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px 12px 16px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    font-weight:700;font-size:15px;line-height:1.3;
+    box-shadow:0 8px 20px rgba(67,56,79,.07);
+    transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease;
+  }
+  .opt svg{width:30px;height:30px;color:var(--primary)}
+  .opt:active{transform:scale(.96)}
+  .opt[aria-pressed="true"]{border-color:var(--primary);background:rgba(255,255,255,.92);box-shadow:0 10px 24px rgba(106,90,134,.25);transform:translateY(-3px)}
+
+  /* ---------- slide 6 ---------- */
+  .letter{padding:26px 24px;text-align:left}
+  .letter p{font-size:17px;line-height:1.7;margin-bottom:14px}
+  .letter p:last-of-type{margin-bottom:0}
+  .sign{font-family:'Fraunces',serif;font-style:italic;font-size:20px;text-align:right;margin-top:16px;color:var(--ink-soft)}
+
+  /* ---------- slide 7 ---------- */
+  textarea{
+    width:100%;min-height:150px;resize:vertical;font-family:'Nunito',sans-serif;font-size:16px;line-height:1.6;
+    color:var(--ink);background:rgba(255,255,255,.8);border:2px solid var(--line);border-radius:18px;padding:14px 16px;
+  }
+  textarea::placeholder{color:#9a8fa8}
+  textarea:focus{outline:none;border-color:var(--primary)}
+  .hint{font-size:13.5px;color:var(--ink-soft);text-align:left;margin-top:-6px}
+  .status{font-size:14.5px;font-weight:600;min-height:20px;color:#b5434d}
+  .alt-link{font-size:14px;color:var(--ink-soft);text-underline-offset:3px;font-weight:600}
+  #done{display:none}
+  #done.show{display:flex;animation:fadeUp .9s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .full-batt{width:110px;height:54px;margin:0 auto;border:4px solid var(--ink);border-radius:15px;padding:5px;position:relative}
+  .full-batt::after{content:"";position:absolute;right:-12px;top:14px;width:8px;height:16px;background:var(--ink);border-radius:0 4px 4px 0}
+  .full-batt i{display:block;height:100%;width:0;background:var(--high);border-radius:7px;animation:fillUp 1.4s .3s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes fillUp{to{width:100%}}
+
+  /* rising particles on success */
+  .spark{position:fixed;bottom:-20px;border-radius:50%;pointer-events:none;z-index:5;opacity:0;
+         animation:rise linear forwards}
+  @keyframes rise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.8}100%{transform:translateY(-105vh) scale(1.1);opacity:0}}
+
+  @media (prefers-reduced-motion: reduce){
+    .glow,.batt-fill,.big-batt i,.notif{animation:none !important}
+    .slide,.reveal,.bar i,.track i,.track b{transition-duration:.01s !important;transition-delay:0s !important}
+    body{transition:none}
+  }
+</style>
+</head>
+<body data-stage="0">
+
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+
+<div class="topbar" aria-hidden="true">
+  <div class="batt" id="batt" data-level="low">
+    <svg class="batt-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <div class="batt-body"><div class="batt-fill" id="battFill"></div></div>
+    <span class="batt-pct" id="battPct">7%</span>
+  </div>
+</div>
+
+<main class="stage">
+
+  <!-- ===== Slide 1 ===== -->
+  <section class="slide active" id="s1">
+    <div class="inner">
+      <p class="eyebrow">Pesan buat Yupi</p>
+      <div class="big-batt" aria-hidden="true"><i></i></div>
+      <div class="card notif" id="notifCard" role="button" tabindex="0" aria-label="Charge sebentar">
+        <div class="notif-icon"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="6" y2="13"/></svg></div>
+        <div>
+          <b>Baterai Yupi hampir habis</b>
+          <span>Tersisa 7%. Mau di-charge sebentar?</span>
+        </div>
+      </div>
+      <button class="btn" data-next>
+        <svg class="ic" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Charge sebentar
+      </button>
+      <p class="soft" style="font-size:14px">dari Ivan</p>
+    </div>
+  </section>
+
+  <!-- ===== Slide 2 ===== -->
+  <section class="slide" id="s2" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Aku lihat kamu.</h2>
+      <p class="soft">Ini yang lagi jalan di kepala kamu akhir-akhir ini:</p>
+      <div class="card procs">
+        <div class="reveal" style="--i:0"><div class="proc-top"><span>Magang</span><span>96%</span></div><div class="bar"><i style="--w:96%;--i:0"></i></div></div>
+        <div class="reveal" style="--i:1"><div class="proc-top"><span>PLBS</span><span>91%</span></div><div class="bar"><i style="--w:91%;--i:1"></i></div></div>
+        <div class="reveal" style="--i:2"><div class="proc-top"><span>TA<small>kepikiran terus</small></span><span>78%</span></div><div class="bar"><i style="--w:78%;--i:2"></i></div></div>
+        <div class="reveal" style="--i:3"><div class="proc-top"><span>Mikirin semuanya</span><span>100%</span></div><div class="bar"><i style="--w:100%;--i:3"></i></div></div>
+      </div>
+      <p class="reveal" style="--i:5">Wajar kalau kamu capek. Yang kamu bawa lagi kebanyakan, bukan kamunya yang kurang kuat.</p>
+      <button class="btn reveal" style="--i:6" data-next>Lanjut</button>
+    </div>
+  </section>
+
+  <!-- ===== Slide 3 ===== -->
+  <section class="slide" id="s3" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Tapi lihat, kamu masih di sini.</h2>
+      <div class="moments">
+        <div class="card moment reveal" style="--i:0"><span class="tick"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><p>Kamu masih ngurus magang.</p></div>
+        <div class="card moment reveal" style="--i:1"><span class="tick"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><p>Kamu masih jagain PLBS.</p></div>
+        <div class="card moment reveal" style="--i:2"><span class="tick"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><p>Kamu masih mikirin TA, padahal lagi capek banget.</p></div>
+      </div>
+      <p class="lead reveal" style="--i:4">Burnout itu bukan tanda kamu gagal. Itu tanda kamu udah terlalu lama kuat.</p>
+      <button class="btn reveal" style="--i:5" data-next>Lanjut</button>
+    </div>
+  </section>
+
+  <!-- ===== Slide Event Indosat Jogja ===== -->
+  <section class="slide" id="sEvent" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Soal event Indosat di Jogja.</h2>
+      <p class="reveal" style="--i:0">Event sebesar itu nggak ringan, dan kamu yang megang detailnya.</p>
+      <div class="card journey reveal" style="--i:1">
+        <div class="journey-labels">
+          <span><small>Sekarang</small>Lagi capek-capeknya</span>
+          <span><small>Hari H</small>Jogja</span>
+        </div>
+        <div class="track" aria-hidden="true"><i></i><b></b></div>
+        <p class="journey-note">Dikit lagi sampai.</p>
+      </div>
+      <p class="lead reveal" style="--i:3">Nggak harus sempurna. Yang penting jalan, dan kamu nggak ngurusnya sendirian.</p>
+      <p class="reveal" style="--i:4">Pas hari H nanti, kamu bakal senang karena udah sampai sejauh ini. Aku nyemangatin dari sini ya, sayang.</p>
+      <button class="btn reveal" style="--i:5" data-next>Lanjut</button>
+    </div>
+  </section>
+
+  <!-- ===== Slide 4 ===== -->
+  <section class="slide" id="s4" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Berhenti sebentar.</h2>
+      <p class="soft">Ikutin lingkarannya. Selama beberapa tarikan napas, nggak ada yang perlu kamu kerjain.</p>
+      <div class="breath-wrap" aria-live="polite">
+        <div class="breath-ring"></div>
+        <div class="breath-orb" id="orb"></div>
+        <div class="breath-label" id="breathLabel">Siap?</div>
+      </div>
+      <div class="breath-count" id="breathCount"></div>
+      <div class="btn-row">
+        <button class="btn" id="breathStart">Mulai</button>
+        <button class="btn btn-ghost" id="breathSkip" hidden>Lewati</button>
+        <button class="btn" id="breathNext" data-next hidden>Lanjut</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Slide 5 ===== -->
+  <section class="slide" id="s5" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Hari ini, kamu paling butuh apa?</h2>
+      <p class="soft">Pilih satu aja. Nggak ada jawaban yang salah.</p>
+      <div class="opts" id="opts">
+        <button class="opt reveal" style="--i:0" aria-pressed="false" data-val="Didengerin">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>Didengerin
+        </button>
+        <button class="opt reveal" style="--i:1" aria-pressed="false" data-val="Dibantuin">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>Dibantuin
+        </button>
+        <button class="opt reveal" style="--i:2" aria-pressed="false" data-val="Ditemenin diem-diem aja">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>Ditemenin diem-diem aja
+        </button>
+        <button class="opt reveal" style="--i:3" aria-pressed="false" data-val="Dibikin ketawa">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>Dibikin ketawa
+        </button>
+      </div>
+      <button class="btn reveal" style="--i:5" id="optNext" data-next disabled>Lanjut</button>
+    </div>
+  </section>
+
+  <!-- ===== Slide 6 ===== -->
+  <section class="slide" id="s6" inert>
+    <div class="inner">
+      <h2 tabindex="-1">Dari Ivan</h2>
+      <div class="card letter reveal" style="--i:0">
+        <p>Yupi,</p>
+        <p class="reveal" style="--i:2">Aku nggak bisa ngangkat semua kerjaan dan pikiran itu dari kamu. Tapi aku mau kamu tahu, capekmu itu nyata, dan wajar.</p>
+        <p class="reveal" style="--i:4">Kamu nggak harus kuat tiap hari. Boleh berhenti sebentar, boleh ngeluh, boleh nggak produktif hari ini. Kamu tetap orang yang hebat, sayang.</p>
+        <p class="reveal" style="--i:6">Kalau butuh teman buat dengerin, aku ada.</p>
+        <div class="sign reveal" style="--i:8">— Ivan</div>
+      </div>
+      <button class="btn reveal" style="--i:9" data-next>Lanjut</button>
+    </div>
+  </section>
+
+  <!-- ===== Slide 7 ===== -->
+  <section class="slide" id="s7" inert>
+    <div class="inner" id="formWrap">
+      <h2 tabindex="-1">Sebelum baterainya penuh.</h2>
+      <p>Di slide terakhir ini kamu boleh kasih unek-unek kamu atau ngomong sebebas kamu, biar kamu lega.</p>
+      <label for="msg" style="position:absolute;left:-9999px">Unek-unek kamu</label>
+      <textarea id="msg" placeholder="Tulis apa aja di sini..." maxlength="3000"></textarea>
+      <p class="hint">Boleh dikosongin juga. Yang kamu tulis langsung masuk ke Ivan.</p>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <button class="btn" id="sendBtn">
+        <svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        <span id="sendLabel">Kirim</span>
+      </button>
+      <a class="alt-link" id="waFallback" href="#" target="_blank" rel="noopener" hidden>Kirim lewat WhatsApp aja</a>
+    </div>
+
+    <div class="inner" id="done">
+      <div class="full-batt" aria-hidden="true"><i></i></div>
+      <h2 tabindex="-1">Terkirim.</h2>
+      <p class="lead">Makasih udah mau jujur, sayang.</p>
+      <p class="soft">Apa pun yang kamu tulis tadi, sekarang udah nyampe ke Ivan. Baterainya penuh. Sekarang kamu boleh istirahat dulu.</p>
+    </div>
+  </section>
+
+</main>
+
+<noscript><p style="position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center">Halaman ini butuh JavaScript supaya bisa jalan.</p></noscript>
+
+<script>
+(() => {
+  /* ======= pengaturan ======= */
+  // Setelah aktivasi pertama, FormSubmit memberi alamat acak (hash) sebagai ganti email.
+  // Kalau mau emailmu tidak kelihatan di source code, ganti bagian email di bawah dengan hash itu.
+  const FORM_ENDPOINT = 'https://formsubmit.co/ajax/ivandwiseptyawan@gmail.com';
+  const WA_NUMBER = '62895379155067';   // dipakai cuma kalau pengiriman email gagal
+  const LEVELS = [7, 20, 32, 42, 55, 72, 85, 93]; // baterai per slide (8 slide)
+
+  /* ======= util ======= */
+  const $ = (s, r = document) => r.querySelector(s);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ======= baterai ======= */
+  const batt = $('#batt'), fill = $('#battFill'), pct = $('#battPct');
+  let shown = 7, battRaf = 0;
+  function setBattery(target){
+    cancelAnimationFrame(battRaf);
+    const from = shown, start = performance.now(), dur = 1100;
+    batt.dataset.level = target < 25 ? 'low' : target < 60 ? 'mid' : 'high';
+    fill.style.width = target + '%';
+    batt.classList.add('charging');
+    const tick = now => {
+      const p = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      shown = Math.round(from + (target - from) * e);
+      pct.textContent = shown + '%';
+      if (p < 1) battRaf = requestAnimationFrame(tick);
+      else batt.classList.remove('charging');
+    };
+    battRaf = requestAnimationFrame(tick);
+  }
+
+  /* ======= navigasi slide ======= */
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let cur = 0, busy = false;
+
+  function goTo(n){
+    if (busy || n === cur || n < 0 || n >= slides.length) return;
+    busy = true;
+    if (slides[cur].id === 's4') breathToken++;   // hentikan sesi napas kalau pindah
+    const out = slides[cur], inn = slides[n];
+    out.classList.remove('active');
+    out.classList.add('leaving');
+    out.inert = true;
+    inn.inert = false;
+    inn.classList.add('active');
+    inn.scrollTop = 0;
+    document.body.dataset.stage = n;
+    setBattery(LEVELS[n]);
+    cur = n;
+    setTimeout(() => {
+      out.classList.remove('leaving');
+      busy = false;
+      const h = $('h1, h2', inn);
+      if (h) h.focus({ preventScroll: true });
+    }, reduceMotion ? 50 : 700);
+  }
+
+  document.querySelectorAll('[data-next]').forEach(b =>
+    b.addEventListener('click', () => goTo(cur + 1)));
+
+  const notif = $('#notifCard');
+  notif.addEventListener('click', () => goTo(1));
+  notif.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goTo(1); }
+  });
+
+  /* ======= slide 4: napas ======= */
+  const orb = $('#orb'), label = $('#breathLabel'), count = $('#breathCount');
+  const bStart = $('#breathStart'), bSkip = $('#breathSkip'), bNext = $('#breathNext');
+  let breathToken = 0;
+  const PHASES = [
+    { t: 'Tarik napas pelan', d: 4000, s: 1 },
+    { t: 'Tahan sebentar',    d: 2000, s: 1 },
+    { t: 'Buang pelan-pelan', d: 6000, s: .62 },
+  ];
+  const CYCLES = 3;
+
+  async function startBreath(){
+    const token = ++breathToken;
+    bStart.hidden = true; bSkip.hidden = false;
+    for (let c = 1; c <= CYCLES; c++){
+      count.textContent = c + ' dari ' + CYCLES;
+      for (const p of PHASES){
+        if (token !== breathToken) return;
+        label.textContent = p.t;
+        orb.style.transitionDuration = p.d + 'ms';
+        orb.style.transform = 'scale(' + p.s + ')';
+        await sleep(p.d);
+      }
+    }
+    if (token !== breathToken) return;
+    label.textContent = 'Udah. Rasain bedanya.';
+    count.textContent = '';
+    bSkip.hidden = true; bNext.hidden = false;
+    setBattery(60);
+  }
+  bStart.addEventListener('click', startBreath);
+  bSkip.addEventListener('click', () => {
+    breathToken++;
+    orb.style.transitionDuration = '1200ms';
+    orb.style.transform = 'scale(.62)';
+    label.textContent = 'Boleh dilewati kok.';
+    count.textContent = '';
+    bSkip.hidden = true; bNext.hidden = false;
+  });
+
+  /* ======= slide 5: pilihan ======= */
+  let choice = '';
+  const optBtns = Array.from(document.querySelectorAll('.opt'));
+  const optNext = $('#optNext');
+  optBtns.forEach(b => b.addEventListener('click', () => {
+    optBtns.forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    choice = b.dataset.val;
+    optNext.disabled = false;
+  }));
+
+  /* ======= slide 7: kirim ======= */
+  const msg = $('#msg'), sendBtn = $('#sendBtn'), sendLabel = $('#sendLabel');
+  const statusEl = $('#status'), waLink = $('#waFallback');
+  const formWrap = $('#formWrap'), done = $('#done');
+
+  function buildWa(text){
+    const body = 'Hai Ivan, ini dari Yupi.\n\nYang aku butuhin hari ini: ' + (choice || '-') +
+                 '\n\n' + (text || '(nggak nulis apa-apa)');
+    return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(body);
+  }
+
+  function spawnSparks(){
+    if (reduceMotion) return;
+    const colors = ['#fbdde8','#ffe8b8','#c9f1d6','#e8dcf5','#ffffff'];
+    for (let i = 0; i < 26; i++){
+      const s = document.createElement('span');
+      s.className = 'spark';
+      const size = 6 + Math.random() * 12;
+      s.style.width = s.style.height = size + 'px';
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.background = colors[Math.floor(Math.random() * colors.length)];
+      s.style.animationDuration = (4 + Math.random() * 4) + 's';
+      s.style.animationDelay = (Math.random() * 1.6) + 's';
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 10500);
+    }
+  }
+
+  function showDone(){
+    formWrap.style.display = 'none';
+    done.classList.add('show');
+    document.body.dataset.stage = 8;
+    setBattery(100);
+    spawnSparks();
+    const h = $('h2', done);
+    if (h) h.focus({ preventScroll: true });
+  }
+
+  async function send(){
+    const text = msg.value.trim();
+    sendBtn.disabled = true;
+    sendLabel.textContent = 'Mengirim…';
+    statusEl.textContent = '';
+    waLink.hidden = true;
+
+    const payload = {
+      _subject: 'Pesan dari Yupi (Isi Ulang Yupi)',
+      _template: 'table',
+      _captcha: 'false',
+      'Yang dibutuhkan hari ini': choice || '(tidak memilih)',
+      'Unek-unek / pesan': text || '(dikosongin)',
+      'Dikirim pada': new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
+    };
+
+    try{
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && (data.success === true || data.success === 'true')){
+        showDone();
+      } else {
+        console.warn('FormSubmit response:', data);
+        throw new Error('not-ok');
+      }
+    }catch(err){
+      statusEl.textContent = 'Belum kekirim. Coba sekali lagi ya, atau kirim lewat WhatsApp.';
+      waLink.href = buildWa(text);
+      waLink.hidden = false;
+      sendBtn.disabled = false;
+      sendLabel.textContent = 'Coba lagi';
+    }
+  }
+  sendBtn.addEventListener('click', send);
+})();
+</script>
+</body>
+</html>
